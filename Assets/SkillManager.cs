@@ -2,6 +2,22 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[SerializeField]
+public enum TriggerOptions {
+    PlayerInput,
+    Random,
+    Continuous
+}
+
+[SerializeField]
+public enum PositionOptions {
+    Global,
+    Local,
+    GameObject,
+    Direction,
+    Mouse
+}
+
 public class SkillManager : MonoBehaviour {
 
     [SerializeField]
@@ -12,8 +28,10 @@ public class SkillManager : MonoBehaviour {
 
     [SerializeField]
     private GameObject prefabSkill;
-    
-    
+
+    public TriggerOptions triggerOption;
+    public PositionOptions startPositionOption;
+    public PositionOptions endPositionOption;
 
     //TRIGGER
     //Trigger to start skill
@@ -50,24 +68,27 @@ public class SkillManager : MonoBehaviour {
 
     public float skillSpeed;
 
+    //EFFECT
+    public bool destroyOnEndPosition;
+
     private List<GameObject> skills;
 
     [HideInInspector]
     public int currentTab;
 
     [HideInInspector]
-    public int triggerChoice, positionChoice, positionChoice1, positionChoice1Direction, targetChoice1, targetChoice1Direction;
+    public int positionChoice, positionChoice1Direction, targetChoice1Direction;
 
     // Use this for initialization
     void Start() {
         skills = new List<GameObject>();
         targetPositions = new List<Vector3>();
 
-        switch (triggerChoice) {
-            case 1:
+        switch (triggerOption) {
+            case TriggerOptions.Random:
                 currentTimeWaited = Random.Range(minTime, maxTime);
                 break;
-            case 2:
+            case TriggerOptions.Continuous:
                 currentTimeWaited = timeBetween;
                 break;
         }
@@ -76,21 +97,21 @@ public class SkillManager : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         //If trigger by player input
-        if (triggerChoice == 0) {
+        if (triggerOption == TriggerOptions.PlayerInput) {
             if (Input.GetKeyDown(input)) {
                 InstantiateSkill();
             }
         }
         //If trigger by time
-        else if(triggerChoice == 1 || triggerChoice == 2) {
+        else if(triggerOption == TriggerOptions.Random || triggerOption == TriggerOptions.Continuous) {
             currentTimeWaited -= Time.deltaTime;
             if(currentTimeWaited <= 0) {
                 InstantiateSkill();
                 //If trigger at random intervals
-                if (triggerChoice == 1)
+                if (triggerOption == TriggerOptions.Random)
                     currentTimeWaited = Random.Range(minTime, maxTime);
                 //If trigger at specific intervals
-                else if (triggerChoice == 2)
+                else if (triggerOption == TriggerOptions.Continuous)
                     currentTimeWaited = timeBetween;
             }
         }
@@ -98,28 +119,35 @@ public class SkillManager : MonoBehaviour {
         if (positionChoice == 1) {
             for (int i = 0; i < skills.Count; i++) {
                 skills[i].transform.position = Vector3.MoveTowards(skills[i].transform.position, targetPositions[i], Time.deltaTime * skillSpeed);
+                if(destroyOnEndPosition) {
+                    if (Vector3.Distance(skills[i].transform.position, targetPositions[i]) < 0.01f) {
+                        Destroy(skills[i]);
+                        skills.Remove(skills[i]);
+                        targetPositions.Remove(targetPositions[i]);
+                    }
+                }
             }
         }
 	}
 
-    private Vector3 GetPositionFromMenu(int choice1, int choice1dir, Vector3 vec, GameObject go, float dist) {
+    private Vector3 GetPositionFromMenu(PositionOptions positionChoice, int choice1dir, Vector3 vec, GameObject go, float dist) {
         Vector3 positionToSpawn = Vector3.zero;
 
-        switch (choice1) {
+        switch (positionChoice) {
             //If skill position is at a global position
-            case 0:
+            case PositionOptions.Global:
                 positionToSpawn = vec;
                 break;
             //If skill position is relative to this local position
-            case 1:
+            case PositionOptions.Local:
                 positionToSpawn = this.transform.position + vec;
                 break;
             //If skill position is at a different game object's position
-            case 2:
+            case PositionOptions.GameObject:
                 positionToSpawn = go.transform.position;
                 break;
             //If skill position is in a certain direction
-            case 3:
+            case PositionOptions.Direction:
                 Vector3 directionVector = Vector3.zero;
                 if (dist > 0) {
                     switch (choice1dir) {
@@ -153,7 +181,7 @@ public class SkillManager : MonoBehaviour {
                 positionToSpawn = this.transform.position + directionVector * dist;
                 break;
             //If skill position is at mouse
-            case 4:
+            case PositionOptions.Mouse:
                 RaycastHit hit;
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 if (Physics.Raycast(ray, out hit, 100.0f)) {
@@ -166,8 +194,8 @@ public class SkillManager : MonoBehaviour {
     }
 
     private void InstantiateSkill() {
-        Vector3 startPoint = GetPositionFromMenu(positionChoice1, positionChoice1Direction, skillPositionVector, skillPositionObject, skillPositionDistance);
-        Vector3 targetPoint = GetPositionFromMenu(targetChoice1, targetChoice1Direction, skillTargetVector, skillTargetObject, skillTargetDistance);
+        Vector3 startPoint = GetPositionFromMenu(startPositionOption, positionChoice1Direction, skillPositionVector, skillPositionObject, skillPositionDistance);
+        Vector3 targetPoint = GetPositionFromMenu(endPositionOption, targetChoice1Direction, skillTargetVector, skillTargetObject, skillTargetDistance);
         GameObject skill = Instantiate(prefabSkill, startPoint, Quaternion.identity);
         skills.Add(skill);
         targetPositions.Add(targetPoint);

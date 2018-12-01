@@ -442,26 +442,27 @@ MonoBehaviour:
   targetPositions: []
   prefabSkill: {fileID: 1854658020476856, guid: c333e657f427cab439976cd04a5baf82,
     type: 2}
+  triggerOption: 0
+  startPositionOption: 3
+  endPositionOption: 4
   input: 101
   cooldownTime: 1
   minTime: 0
   maxTime: 0
   timeBetween: 0
   skillPositionVector: {x: 0, y: 2, z: 0}
-  skillPositionObject: {fileID: 0}
+  skillPositionObject: {fileID: 738722656}
   skillPositionDirection: {x: 0, y: 0, z: 0}
-  skillPositionDistance: 0
+  skillPositionDistance: 3
   skillTargetVector: {x: 0, y: 0, z: 0}
   skillTargetObject: {fileID: 127603611}
   skillTargetDirection: {x: 0, y: 0, z: 0}
   skillTargetDistance: 4
   skillSpeed: 5
-  currentTab: 3
-  triggerChoice: 0
+  destroyOnEndPosition: 1
+  currentTab: 1
   positionChoice: 1
-  positionChoice1: 3
   positionChoice1Direction: 4
-  targetChoice1: 4
   targetChoice1Direction: 4
 --- !u!1 &1989130545
 GameObject:

@@ -13,6 +13,8 @@ public class SkillManagerEditor : Editor {
     private SerializedProperty prefabSkill;
 
     //Trigger
+    private SerializedProperty triggerOption;
+
     private SerializedProperty input;
     private SerializedProperty minTime;
     private SerializedProperty maxTime;
@@ -20,6 +22,9 @@ public class SkillManagerEditor : Editor {
     private SerializedProperty cooldownTime;
 
     //Position
+    private SerializedProperty startPositionOption;
+    private SerializedProperty endPositionOption;
+
     public SerializedProperty skillPositionVector;
     public SerializedProperty skillPositionObject;
     public SerializedProperty skillPositionDirection;
@@ -31,6 +36,9 @@ public class SkillManagerEditor : Editor {
     public SerializedProperty skillTargetDirection;
     public SerializedProperty skillTargetDistance;
 
+    //Effect
+    public SerializedProperty destroyOnEndPosition;
+
     public SerializedProperty skillSpeed;
 
     private void OnEnable() {
@@ -41,6 +49,8 @@ public class SkillManagerEditor : Editor {
         prefabSkill = soTarget.FindProperty("prefabSkill");
 
         //Trigger
+        triggerOption = soTarget.FindProperty("triggerOption");
+
         input = soTarget.FindProperty("input");
         cooldownTime = soTarget.FindProperty("cooldownTime");
         minTime = soTarget.FindProperty("minTime");
@@ -59,6 +69,9 @@ public class SkillManagerEditor : Editor {
         skillTargetDirection = soTarget.FindProperty("skillTargetDirection");
         skillTargetDistance = soTarget.FindProperty("skillTargetDistance");
 
+        //Effect
+        destroyOnEndPosition = soTarget.FindProperty("destroyOnEndPosition");
+
         //Speed
         skillSpeed = soTarget.FindProperty("skillSpeed");
     }
@@ -72,19 +85,19 @@ public class SkillManagerEditor : Editor {
 
         switch(myTarget.currentTab) {
             case 0:
-                myTarget.triggerChoice = GUILayout.Toolbar(myTarget.triggerChoice, new string[] { "Player input", "Random", "Continuously" });
-                switch(myTarget.triggerChoice) {
-                    case 0:
+                EditorGUILayout.PropertyField(triggerOption);
+                switch(myTarget.triggerOption) {
+                    case TriggerOptions.PlayerInput:
                         EditorGUILayout.LabelField("Trigger by player input");
                         EditorGUILayout.PropertyField(input);
                         EditorGUILayout.PropertyField(cooldownTime);
                         break;
-                    case 1:
+                    case TriggerOptions.Random:
                         EditorGUILayout.LabelField("Trigger at random intervals");
                         EditorGUILayout.PropertyField(minTime);
                         EditorGUILayout.PropertyField(maxTime);
                         break;
-                    case 2:
+                    case TriggerOptions.Continuous:
                         EditorGUILayout.LabelField("Trigger at specific intervals");
                         EditorGUILayout.PropertyField(timeBetween);
                         break;
@@ -92,16 +105,17 @@ public class SkillManagerEditor : Editor {
                 break;
             case 1:
                 myTarget.positionChoice = GUILayout.Toolbar(myTarget.positionChoice, new string[] { "Constant position", "Move position" });
-                switch(myTarget.positionChoice) {
+
+                EditorGUILayout.LabelField("Start position");
+                ShowTargetOptions(ref myTarget.startPositionOption, ref myTarget.positionChoice1Direction, ref skillPositionVector, ref skillPositionObject, ref skillPositionDistance);
+
+                switch (myTarget.positionChoice) {
                     case 0:
-                        EditorGUILayout.LabelField("Constant position");
-                        ShowTargetOptions(ref myTarget.positionChoice1, ref myTarget.positionChoice1Direction, ref skillPositionVector, ref skillPositionObject, ref skillPositionDistance);
+                        
                         break;
                     case 1:
-                        EditorGUILayout.LabelField("Start position");
-                        ShowTargetOptions(ref myTarget.positionChoice1, ref myTarget.positionChoice1Direction, ref skillPositionVector, ref skillPositionObject, ref skillPositionDistance);
                         EditorGUILayout.LabelField("End position");
-                        ShowTargetOptions(ref myTarget.targetChoice1, ref myTarget.targetChoice1Direction, ref skillTargetVector, ref skillTargetObject, ref skillTargetDistance);
+                        ShowTargetOptions(ref myTarget.endPositionOption, ref myTarget.targetChoice1Direction, ref skillTargetVector, ref skillTargetObject, ref skillTargetDistance);
                         EditorGUILayout.LabelField("Speed");
                         EditorGUILayout.PropertyField(skillSpeed);
                         break;
@@ -111,7 +125,7 @@ public class SkillManagerEditor : Editor {
                 EditorGUILayout.PropertyField(prefabSkill);
                 break;
             case 3:
-
+                EditorGUILayout.PropertyField(destroyOnEndPosition);
                 break;
         }
 
@@ -121,17 +135,17 @@ public class SkillManagerEditor : Editor {
         }
     }
 
-    private void ShowTargetOptions(ref int choice1, ref int choice1dir, ref SerializedProperty vec, ref SerializedProperty obj, ref SerializedProperty dist) {
-        choice1 = GUILayout.Toolbar(choice1, new string[] { "Global", "Local", "GameObject", "Direction", "Mouse" });
-        switch (choice1) {
-            case 0:
-            case 1:
+    private void ShowTargetOptions(ref PositionOptions positionChoice, ref int choice1dir, ref SerializedProperty vec, ref SerializedProperty obj, ref SerializedProperty dist) {
+        positionChoice = (PositionOptions)EditorGUILayout.EnumPopup("Position type: ", positionChoice);
+        switch (positionChoice) {
+            case PositionOptions.Global:
+            case PositionOptions.Local:
                 EditorGUILayout.PropertyField(vec);
                 break;
-            case 2:
+            case PositionOptions.GameObject:
                 EditorGUILayout.PropertyField(obj);
                 break;
-            case 3:
+            case PositionOptions.Direction:
                 choice1dir = GUILayout.Toolbar(choice1dir, new string[] { "Forward", "Backward", "Left", "Right", "Up", "Down" });
                 EditorGUILayout.PropertyField(dist);
                 break;
