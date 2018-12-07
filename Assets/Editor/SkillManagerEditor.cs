@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using System.Linq;
+using System.Reflection;
 
 [CustomEditor(typeof(SkillManager))]
 public class SkillManagerEditor : Editor {
@@ -25,21 +27,31 @@ public class SkillManagerEditor : Editor {
     private SerializedProperty startPositionOption;
     private SerializedProperty endPositionOption;
 
-    public SerializedProperty skillPositionVector;
-    public SerializedProperty skillPositionObject;
-    public SerializedProperty skillPositionDirection;
-    public SerializedProperty skillPositionDistance;
+    private SerializedProperty skillPositionVector;
+    private SerializedProperty skillPositionObject;
+    private SerializedProperty skillPositionDirection;
+    private SerializedProperty skillPositionDistance;
 
     //Target
-    public SerializedProperty skillTargetVector;
-    public SerializedProperty skillTargetObject;
-    public SerializedProperty skillTargetDirection;
-    public SerializedProperty skillTargetDistance;
+    private SerializedProperty skillTargetVector;
+    private SerializedProperty skillTargetObject;
+    private SerializedProperty skillTargetDirection;
+    private SerializedProperty skillTargetDistance;
 
     //Effect
-    public SerializedProperty destroyOnEndPosition;
+    private SerializedProperty destroyOnEndPosition;
 
-    public SerializedProperty skillSpeed;
+    private SerializedProperty effectTargetGameObject;
+    private SerializedProperty effectTargetName;
+    private SerializedProperty effectTargetTag;
+    private SerializedProperty effectTargetScriptName;
+
+    private SerializedProperty skillSpeed;
+
+    //Script
+    private SerializedProperty selectedScript;
+
+    private SerializedProperty triggerEvent;
 
     private void OnEnable() {
         myTarget = (SkillManager)target;
@@ -72,8 +84,18 @@ public class SkillManagerEditor : Editor {
         //Effect
         destroyOnEndPosition = soTarget.FindProperty("destroyOnEndPosition");
 
+        effectTargetGameObject = soTarget.FindProperty("effectTargetGameObject");
+        effectTargetName = soTarget.FindProperty("effectTargetName");
+        effectTargetTag = soTarget.FindProperty("effectTargetTag");
+        effectTargetScriptName = soTarget.FindProperty("effectTargetScriptName");
+
+        //Script
+        selectedScript = soTarget.FindProperty("selectedScript");
+
         //Speed
         skillSpeed = soTarget.FindProperty("skillSpeed");
+
+        triggerEvent = soTarget.FindProperty("triggerEvent");
     }
 
     public override void OnInspectorGUI() {
@@ -126,6 +148,39 @@ public class SkillManagerEditor : Editor {
                 break;
             case 3:
                 EditorGUILayout.PropertyField(destroyOnEndPosition);
+                myTarget.targetEffect = (TargetType)EditorGUILayout.EnumPopup("Target type: ", myTarget.targetEffect);
+                switch(myTarget.targetEffect) {
+                    case TargetType.GameObject:
+                        EditorGUILayout.PropertyField(effectTargetGameObject);
+                        break;
+                    case TargetType.Name:
+                        EditorGUILayout.PropertyField(effectTargetName);
+                        break;
+                    case TargetType.Tag:
+                        EditorGUILayout.PropertyField(effectTargetTag);
+                        break;
+                    case TargetType.Script:
+                        EditorGUILayout.PropertyField(effectTargetScriptName);
+                        break;
+                }
+
+                myTarget.effectOptionsChoice = GUILayout.Toolbar(myTarget.effectOptionsChoice, new string[] { "Change variable(s) in script", "Call method", "Destroy object" });
+                switch (myTarget.effectOptionsChoice) {
+                    case 0:
+                        EditorGUILayout.PropertyField(triggerEvent);
+                        break;
+                    case 1:
+                        EditorGUILayout.PropertyField(selectedScript);
+                        if (myTarget.selectedScript != null) {
+                            System.Type type = myTarget.selectedScript.GetType();
+                            Debug.Log(type.FullName);
+                            FieldInfo[] fields = type.GetFields();
+                            EditorGUILayout.LabelField(fields[0].Name);
+                        }
+                        break;
+                }
+
+
                 break;
         }
 

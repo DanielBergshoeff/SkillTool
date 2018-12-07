@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
 
 [SerializeField]
 public enum TriggerOptions {
@@ -18,7 +20,34 @@ public enum PositionOptions {
     Mouse
 }
 
+[SerializeField]
+public enum TargetType {
+    GameObject,
+    Name,
+    Tag,
+    Script
+}
+
+[SerializeField]
+public enum EffectOptions {
+    
+}
+
+
+
+
 public class SkillManager : MonoBehaviour {
+
+    [System.Serializable]
+    public class TriggerEvent : UnityEvent { }
+
+    [SerializeField]
+    public TriggerEvent triggerEvent = new TriggerEvent();
+    public TriggerEvent onTriggerEvent {  get { return triggerEvent; } set { triggerEvent = value; } }
+
+    [SerializeField]
+    public Object selectedScript;
+    public string selectedMethod;
 
     [SerializeField]
     private Transform startPosition;
@@ -70,6 +99,23 @@ public class SkillManager : MonoBehaviour {
 
     //EFFECT
     public bool destroyOnEndPosition;
+
+    //Range of effect
+    public float effectRange;
+
+    public TargetType targetEffect;
+
+    //Possible effect targets
+    public GameObject effectTargetGameObject;
+    public string effectTargetName;
+    public string effectTargetTag;
+    public string effectTargetScriptName;
+
+    //Effect options
+    public int effectOptionsChoice;
+
+    //From script
+    public string onEffectScriptName;
 
     private List<GameObject> skills;
 
