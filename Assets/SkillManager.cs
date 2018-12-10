@@ -113,6 +113,7 @@ public class SkillManager : MonoBehaviour {
 
     //Effect options
     public int effectOptionsChoice;
+    public int fieldChosenChoice;
 
     //From script
     public string onEffectScriptName;
@@ -165,16 +166,49 @@ public class SkillManager : MonoBehaviour {
         if (positionChoice == 1) {
             for (int i = 0; i < skills.Count; i++) {
                 skills[i].transform.position = Vector3.MoveTowards(skills[i].transform.position, targetPositions[i], Time.deltaTime * skillSpeed);
-                if(destroyOnEndPosition) {
-                    if (Vector3.Distance(skills[i].transform.position, targetPositions[i]) < 0.01f) {
-                        Destroy(skills[i]);
-                        skills.Remove(skills[i]);
-                        targetPositions.Remove(targetPositions[i]);
+                if (Vector3.Distance(skills[i].transform.position, targetPositions[i]) < 0.01f) {
+                    if (destroyOnEndPosition) {
+                        {
+                            Destroy(skills[i]);
+                            skills.Remove(skills[i]);
+                            targetPositions.Remove(targetPositions[i]);
+                        }
+                    }
+
+                    //Effect
+                    switch(targetEffect) {
+                        //If the target of effect is a script
+                        case TargetType.Script:
+                            Collider[] hitColliders = Physics.OverlapSphere(skills[i].transform.position, effectRange);
+                            foreach (Collider collider in hitColliders) {
+                                var script = collider.gameObject.GetComponent(effectTargetScriptName);
+                                if(script != null) {
+                                    DoEffect(collider.gameObject);
+                                }
+                            }
+                            break;
                     }
                 }
             }
         }
 	}
+
+    private void DoEffect(GameObject go) {
+        switch(effectOptionsChoice) {
+            //If a variable needs to be changed in the script
+            case 0:
+
+                break;
+            //If a method needs to be called in the script
+            case 1:
+
+                break;
+            //If the gameobject needs to be destroyed
+            case 2:
+                Destroy(go);
+                break;
+        }
+    }
 
     private Vector3 GetPositionFromMenu(PositionOptions positionChoice, int choice1dir, Vector3 vec, GameObject go, float dist) {
         Vector3 positionToSpawn = Vector3.zero;

@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Linq;
 using System.Reflection;
+using System;
 
 [CustomEditor(typeof(SkillManager))]
 public class SkillManagerEditor : Editor {
@@ -40,6 +41,7 @@ public class SkillManagerEditor : Editor {
 
     //Effect
     private SerializedProperty destroyOnEndPosition;
+    private SerializedProperty effectRange;
 
     private SerializedProperty effectTargetGameObject;
     private SerializedProperty effectTargetName;
@@ -83,6 +85,7 @@ public class SkillManagerEditor : Editor {
 
         //Effect
         destroyOnEndPosition = soTarget.FindProperty("destroyOnEndPosition");
+        effectRange = soTarget.FindProperty("effectRange");
 
         effectTargetGameObject = soTarget.FindProperty("effectTargetGameObject");
         effectTargetName = soTarget.FindProperty("effectTargetName");
@@ -148,6 +151,7 @@ public class SkillManagerEditor : Editor {
                 break;
             case 3:
                 EditorGUILayout.PropertyField(destroyOnEndPosition);
+                EditorGUILayout.PropertyField(effectRange);
                 myTarget.targetEffect = (TargetType)EditorGUILayout.EnumPopup("Target type: ", myTarget.targetEffect);
                 switch(myTarget.targetEffect) {
                     case TargetType.GameObject:
@@ -167,20 +171,46 @@ public class SkillManagerEditor : Editor {
                 myTarget.effectOptionsChoice = GUILayout.Toolbar(myTarget.effectOptionsChoice, new string[] { "Change variable(s) in script", "Call method", "Destroy object" });
                 switch (myTarget.effectOptionsChoice) {
                     case 0:
-                        EditorGUILayout.PropertyField(triggerEvent);
+                        EditorGUILayout.PropertyField(selectedScript);
+                        var type = GetType(myTarget.selectedScript.name);
+                        //System.Type type = typeof(Unit);
+                        var fields = type.GetFields();
+                        var typeInstance = System.Activator.CreateInstance(type);
+
+                        string[] fieldNames = new string[fields.Length];
+                        for (int i = 0; i < fields.Length; i++) {
+                            fieldNames[i] = fields[i].Name;
+                        }
+
+                        myTarget.fieldChosenChoice = GUILayout.Toolbar(myTarget.fieldChosenChoice, fieldNames);
+
+                        object temp = fields[myTarget.fieldChosenChoice].GetValue(typeInstance);
+                        if (temp is float) {
+                            fields[myTarget.fieldChosenChoice].SetValue(typeInstance, EditorGUILayout.FloatField(fields[myTarget.fieldChosenChoice].Name + ": ", (float)temp));
+                        }
+                        else if (temp is int) {
+                            fields[myTarget.fieldChosenChoice].SetValue(typeInstance, EditorGUILayout.IntField(fields[myTarget.fieldChosenChoice].Name + ": ", (int)temp));
+                        }
+
+                        /*for (int i = 0; i < fields.Length; i++) {
+                            object temp = fields[i].GetValue(typeInstance);
+                            
+                            EditorGUILayout.LabelField(fields[i].Name);
+                            
+                            if (temp is float) {
+                                fields[i].SetValue(typeInstance, EditorGUILayout.FloatField(fields[i].Name + ": ", (float)temp));
+                            }
+                            else if (temp is int) {
+                                fields[i].SetValue(typeInstance, EditorGUILayout.IntField(fields[i].Name + ": ", (int)temp));
+                            }
+                        }*/
+
                         break;
                     case 1:
-                        EditorGUILayout.PropertyField(selectedScript);
-                        if (myTarget.selectedScript != null) {
-                            System.Type type = myTarget.selectedScript.GetType();
-                            Debug.Log(type.FullName);
-                            FieldInfo[] fields = type.GetFields();
-                            EditorGUILayout.LabelField(fields[0].Name);
-                        }
+                        EditorGUILayout.PropertyField(triggerEvent);
                         break;
+
                 }
-
-
                 break;
         }
 
@@ -205,5 +235,55 @@ public class SkillManagerEditor : Editor {
                 EditorGUILayout.PropertyField(dist);
                 break;
         }
+    }
+
+    public static Type GetType(string TypeName) {
+
+        // Try Type.GetType() first. This will work with types defined
+        // by the Mono runtime, in the same assembly as the caller, etc.
+        var type = Type.GetType(TypeName);
+
+        // If it worked, then we're done here
+        if (type != null)
+            return type;
+
+        // If the TypeName is a full name, then we can try loading the defining assembly directly
+        if (TypeName.Contains(".")) {
+
+            // Get the name of the assembly (Assumption is that we are using 
+            // fully-qualified type names)
+            var assemblyName = TypeName.Substring(0, TypeName.IndexOf('.'));
+
+            // Attempt to load the indicated Assembly
+            var assembly = Assembly.Load(assemblyName);
+            if (assembly == null)
+                return null;
+
+            // Ask that assembly to return the proper Type
+            type = assembly.GetType(TypeName);
+            if (type != null)
+                return type;
+
+        }
+
+        // If we still haven't found the proper type, we can enumerate all of the 
+        // loaded assemblies and see if any of them define the type
+        var currentAssembly = Assembly.GetExecutingAssembly();
+        var referencedAssemblies = currentAssembly.GetReferencedAssemblies();
+        foreach (var assemblyName in referencedAssemblies) {
+
+            // Load the referenced assembly
+            var assembly = Assembly.Load(assemblyName);
+            if (assembly != null) {
+                // See if that assembly defines the named type
+                type = assembly.GetType(TypeName);
+                if (type != null)
+                    return type;
+            }
+        }
+
+        // The type just couldn't be found...
+        return null;
+
     }
 }
