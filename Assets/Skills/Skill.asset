@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7be4a9c317b0d74bbaaaae0436fa589, type: 3}
+  m_Name: Skill
+  m_EditorClassIdentifier: 
+  triggerEvent:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: TriggerEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  selectedScript: {fileID: 0}
+  selectedMethod: 
+  startPosition: {fileID: 0}
+  targetPositions: []
+  prefabSkill: {fileID: 100000, guid: 77ec3c4e07a36814fb3169ecef41b50a, type: 2}
+  triggerOption: 0
+  startPositionOption: 0
+  endPositionOption: 4
+  input: 101
+  cooldownTime: 1
+  minTime: 0
+  maxTime: 0
+  timeBetween: 0
+  currentTimeWaited: 0
+  skillPositionVector: {x: 0, y: 3, z: 0}
+  skillPositionObject: {fileID: 0}
+  skillPositionDirection: {x: 0, y: 0, z: 0}
+  skillPositionDistance: 0
+  skillTargetVector: {x: 0, y: 0, z: 0}
+  skillTargetObject: {fileID: 0}
+  skillTargetDirection: {x: 0, y: 0, z: 0}
+  skillTargetDistance: 0
+  skillSpeed: 3
+  destroyOnEndPosition: 1
+  effectRange: 5
+  targetEffect: 3
+  effectTargetGameObject: {fileID: 0}
+  effectTargetName: 
+  effectTargetTag: 
+  effectTargetScriptName: Unit
+  effectOptionsChoice: 2
+  fieldChosenChoice: 0
+  onEffectScriptName: 
+  currentTab: 0
+  positionChoice: 1
+  positionChoice1Direction: 0
+  targetChoice1Direction: 0
+  skillGameObject: {fileID: 0}

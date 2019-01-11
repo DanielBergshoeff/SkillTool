@@ -5,6 +5,7 @@ using UnityEngine;
 public class Unit : MonoBehaviour {
 
     public float health;
+    private float damage;
     public int mana;
 
     public float Health {

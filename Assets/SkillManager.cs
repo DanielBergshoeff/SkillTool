@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
+using System.Reflection;
+using System.Linq;
 
 [SerializeField]
 public enum TriggerOptions {
@@ -33,170 +35,111 @@ public enum EffectOptions {
     
 }
 
+[System.Serializable]
+public class TriggerEvent : UnityEvent { }
 
+[System.Serializable]
+public class SkillInstances {
+    public List<Skill> skills;
+}
 
 
 public class SkillManager : MonoBehaviour {
-
-    [System.Serializable]
-    public class TriggerEvent : UnityEvent { }
-
+    public Skill[] allSkills;
+    
     [SerializeField]
-    public TriggerEvent triggerEvent = new TriggerEvent();
-    public TriggerEvent onTriggerEvent {  get { return triggerEvent; } set { triggerEvent = value; } }
-
-    [SerializeField]
-    public Object selectedScript;
-    public string selectedMethod;
-
-    [SerializeField]
-    private Transform startPosition;
-
-    [SerializeField]
-    private List<Vector3> targetPositions;
-
-    [SerializeField]
-    private GameObject prefabSkill;
-
-    public TriggerOptions triggerOption;
-    public PositionOptions startPositionOption;
-    public PositionOptions endPositionOption;
-
-    //TRIGGER
-    //Trigger to start skill
-    public KeyCode input;
-    public float cooldownTime;
-
-    //Min and max time between skill start at random
-    public float minTime;
-    public float maxTime;
-
-    //Time between skill start -> continuously
-    public float timeBetween;
-    private float currentTimeWaited;
-
-    //POSITION
-    public Vector3 skillPositionVector;
-
-    //Position based on GameObject
-    public GameObject skillPositionObject;
-
-    //Position based on direction and distance
-    public Vector3 skillPositionDirection;
-    public float skillPositionDistance;
-
-    //TARGET
-    public Vector3 skillTargetVector;
-
-    //Target based on GameObject
-    public GameObject skillTargetObject;
-
-    //Target based on direction and distance
-    public Vector3 skillTargetDirection;
-    public float skillTargetDistance;
-
-    public float skillSpeed;
-
-    //EFFECT
-    public bool destroyOnEndPosition;
-
-    //Range of effect
-    public float effectRange;
-
-    public TargetType targetEffect;
-
-    //Possible effect targets
-    public GameObject effectTargetGameObject;
-    public string effectTargetName;
-    public string effectTargetTag;
-    public string effectTargetScriptName;
-
-    //Effect options
-    public int effectOptionsChoice;
-    public int fieldChosenChoice;
-
-    //From script
-    public string onEffectScriptName;
-
-    private List<GameObject> skills;
-
-    [HideInInspector]
-    public int currentTab;
-
-    [HideInInspector]
-    public int positionChoice, positionChoice1Direction, targetChoice1Direction;
+    private SkillInstances[] skillInstances;
 
     // Use this for initialization
     void Start() {
-        skills = new List<GameObject>();
-        targetPositions = new List<Vector3>();
-
-        switch (triggerOption) {
-            case TriggerOptions.Random:
-                currentTimeWaited = Random.Range(minTime, maxTime);
-                break;
-            case TriggerOptions.Continuous:
-                currentTimeWaited = timeBetween;
-                break;
+        skillInstances = new SkillInstances[allSkills.Length];
+        for (int i = 0; i < skillInstances.Length; i++) {
+            skillInstances[i] = new SkillInstances();
+            skillInstances[i].skills = new List<Skill>();
         }
-	}
+        foreach (Skill skill in allSkills) {
+            skill.targetPositions = new List<Vector3>();
+
+            switch (skill.triggerOption) {
+                case TriggerOptions.Random:
+                    skill.currentTimeWaited = Random.Range(skill.minTime, skill.maxTime);
+                    break;
+                case TriggerOptions.Continuous:
+                    skill.currentTimeWaited = skill.timeBetween;
+                    break;
+            }
+        }
+    }
 	
 	// Update is called once per frame
 	void Update () {
-        //If trigger by player input
-        if (triggerOption == TriggerOptions.PlayerInput) {
-            if (Input.GetKeyDown(input)) {
-                InstantiateSkill();
+        foreach (Skill skill in allSkills) {
+            //If trigger by player input
+            if (skill.triggerOption == TriggerOptions.PlayerInput) {
+                if (Input.GetKeyDown(skill.input)) {
+                    InstantiateSkill(skill);
+                }
             }
-        }
-        //If trigger by time
-        else if(triggerOption == TriggerOptions.Random || triggerOption == TriggerOptions.Continuous) {
-            currentTimeWaited -= Time.deltaTime;
-            if(currentTimeWaited <= 0) {
-                InstantiateSkill();
-                //If trigger at random intervals
-                if (triggerOption == TriggerOptions.Random)
-                    currentTimeWaited = Random.Range(minTime, maxTime);
-                //If trigger at specific intervals
-                else if (triggerOption == TriggerOptions.Continuous)
-                    currentTimeWaited = timeBetween;
+            //If trigger by time
+            else if (skill.triggerOption == TriggerOptions.Random || skill.triggerOption == TriggerOptions.Continuous) {
+                skill.currentTimeWaited -= Time.deltaTime;
+                if (skill.currentTimeWaited <= 0) {
+                    InstantiateSkill(skill);
+                    //If trigger at random intervals
+                    if (skill.triggerOption == TriggerOptions.Random)
+                        skill.currentTimeWaited = Random.Range(skill.minTime, skill.maxTime);
+                    //If trigger at specific intervals
+                    else if (skill.triggerOption == TriggerOptions.Continuous)
+                        skill.currentTimeWaited = skill.timeBetween;
+                }
             }
         }
 
-        if (positionChoice == 1) {
-            for (int i = 0; i < skills.Count; i++) {
-                skills[i].transform.position = Vector3.MoveTowards(skills[i].transform.position, targetPositions[i], Time.deltaTime * skillSpeed);
-                if (Vector3.Distance(skills[i].transform.position, targetPositions[i]) < 0.01f) {
-                    if (destroyOnEndPosition) {
-                        {
-                            Destroy(skills[i]);
-                            skills.Remove(skills[i]);
-                            targetPositions.Remove(targetPositions[i]);
-                        }
-                    }
+        for (int i = 0; i < allSkills.Length; i++) {
+            if (allSkills[i].positionChoice == 1) {
+                for (int j = 0; j < skillInstances[i].skills.Count; j++) {
+                    skillInstances[i].skills[j].skillGameObject.transform.position = Vector3.MoveTowards(skillInstances[i].skills[j].skillGameObject.transform.position, skillInstances[i].skills[j].targetPositions[0], Time.deltaTime * skillInstances[i].skills[j].skillSpeed);
+                    if (Vector3.Distance(skillInstances[i].skills[j].skillGameObject.transform.position, skillInstances[i].skills[j].targetPositions[0]) < 0.01f) {
+                        Debug.Log("Skill reached end position and was destroyed");
 
-                    //Effect
-                    switch(targetEffect) {
-                        //If the target of effect is a script
-                        case TargetType.Script:
-                            Collider[] hitColliders = Physics.OverlapSphere(skills[i].transform.position, effectRange);
-                            foreach (Collider collider in hitColliders) {
-                                var script = collider.gameObject.GetComponent(effectTargetScriptName);
-                                if(script != null) {
-                                    DoEffect(collider.gameObject);
+                        //Effect
+                        switch (allSkills[i].targetEffect) {
+                            //If the target of effect is a script
+                            case TargetType.Script:
+                                Collider[] hitColliders = Physics.OverlapSphere(skillInstances[i].skills[j].skillGameObject.transform.position, allSkills[i].effectRange);
+                                foreach (Collider collider in hitColliders) {
+                                    var script = collider.gameObject.GetComponent(allSkills[i].effectTargetScriptName);
+                                    if (script != null) {
+                                        DoEffect(collider.gameObject, allSkills[i]);
+                                    }
                                 }
+                                break;
+                        }
+
+                        if (allSkills[i].destroyOnEndPosition) {
+                            {
+                                Debug.Log("Skill reached end position and was destroyed");
+
+                                Destroy(skillInstances[i].skills[j].skillGameObject);
+                                skillInstances[i].skills.Remove(skillInstances[i].skills[j]);
                             }
-                            break;
+                        }
                     }
                 }
             }
         }
 	}
 
-    private void DoEffect(GameObject go) {
-        switch(effectOptionsChoice) {
+    private void DoEffect(GameObject go, Skill skill) {
+        switch(skill.effectOptionsChoice) {
             //If a variable needs to be changed in the script
             case 0:
+                var script = go.GetComponent(skill.selectedScript.name);
+                var type = GetType(skill.selectedScript.name);
+                var fields = type.GetFields();
+
+                FieldInfo field = script.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)[skill.fieldChosenChoice];
+                field.SetValue(script, skill.fieldValue);
 
                 break;
             //If a method needs to be called in the script
@@ -273,11 +216,67 @@ public class SkillManager : MonoBehaviour {
         return positionToSpawn;
     }
 
-    private void InstantiateSkill() {
-        Vector3 startPoint = GetPositionFromMenu(startPositionOption, positionChoice1Direction, skillPositionVector, skillPositionObject, skillPositionDistance);
-        Vector3 targetPoint = GetPositionFromMenu(endPositionOption, targetChoice1Direction, skillTargetVector, skillTargetObject, skillTargetDistance);
-        GameObject skill = Instantiate(prefabSkill, startPoint, Quaternion.identity);
-        skills.Add(skill);
-        targetPositions.Add(targetPoint);
+    private void InstantiateSkill(Skill skillToInstantiate) {
+        for (int i = 0; i < allSkills.Length; i++) {
+            if(skillToInstantiate == allSkills[i]) {
+                Skill skill = Instantiate(skillToInstantiate);
+                Vector3 startPoint = GetPositionFromMenu(skill.startPositionOption, skill.positionChoice1Direction, skill.skillPositionVector, skill.skillPositionObject, skill.skillPositionDistance);
+                Vector3 targetPoint = GetPositionFromMenu(skill.endPositionOption, skill.targetChoice1Direction, skill.skillTargetVector, skill.skillTargetObject, skill.skillTargetDistance);
+                GameObject skillgo = Instantiate(skill.prefabSkill, startPoint, Quaternion.identity);
+                skill.skillGameObject = skillgo;
+                skill.targetPositions.Add(targetPoint);
+                skillInstances[i].skills.Add(skill);
+            }
+        }
+    }
+
+    public static System.Type GetType(string TypeName) {
+
+        // Try Type.GetType() first. This will work with types defined
+        // by the Mono runtime, in the same assembly as the caller, etc.
+        var type = System.Type.GetType(TypeName);
+
+        // If it worked, then we're done here
+        if (type != null)
+            return type;
+
+        // If the TypeName is a full name, then we can try loading the defining assembly directly
+        if (TypeName.Contains(".")) {
+
+            // Get the name of the assembly (Assumption is that we are using 
+            // fully-qualified type names)
+            var assemblyName = TypeName.Substring(0, TypeName.IndexOf('.'));
+
+            // Attempt to load the indicated Assembly
+            var assembly = Assembly.Load(assemblyName);
+            if (assembly == null)
+                return null;
+
+            // Ask that assembly to return the proper Type
+            type = assembly.GetType(TypeName);
+            if (type != null)
+                return type;
+
+        }
+
+        // If we still haven't found the proper type, we can enumerate all of the 
+        // loaded assemblies and see if any of them define the type
+        var currentAssembly = Assembly.GetExecutingAssembly();
+        var referencedAssemblies = currentAssembly.GetReferencedAssemblies();
+        foreach (var assemblyName in referencedAssemblies) {
+
+            // Load the referenced assembly
+            var assembly = Assembly.Load(assemblyName);
+            if (assembly != null) {
+                // See if that assembly defines the named type
+                type = assembly.GetType(TypeName);
+                if (type != null)
+                    return type;
+            }
+        }
+
+        // The type just couldn't be found...
+        return null;
+
     }
 }

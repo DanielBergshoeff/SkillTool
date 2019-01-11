@@ -6,10 +6,10 @@ using System.Linq;
 using System.Reflection;
 using System;
 
-[CustomEditor(typeof(SkillManager))]
+[CustomEditor(typeof(SkillCreator))]
 public class SkillManagerEditor : Editor {
 
-    private SkillManager myTarget;
+    private SkillCreator myTarget;
     private SerializedObject soTarget;
 
     //Prefab
@@ -56,7 +56,7 @@ public class SkillManagerEditor : Editor {
     private SerializedProperty triggerEvent;
 
     private void OnEnable() {
-        myTarget = (SkillManager)target;
+        myTarget = (SkillCreator)target;
         soTarget = new SerializedObject(target);
 
         //Prefab
@@ -172,9 +172,9 @@ public class SkillManagerEditor : Editor {
                 switch (myTarget.effectOptionsChoice) {
                     case 0:
                         EditorGUILayout.PropertyField(selectedScript);
-                        var type = GetType(myTarget.selectedScript.name);
+                        var type = SkillManager.GetType(myTarget.selectedScript.name);
                         //System.Type type = typeof(Unit);
-                        var fields = type.GetFields();
+                        var fields = type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
                         var typeInstance = System.Activator.CreateInstance(type);
 
                         string[] fieldNames = new string[fields.Length];
@@ -183,10 +183,13 @@ public class SkillManagerEditor : Editor {
                         }
 
                         myTarget.fieldChosenChoice = GUILayout.Toolbar(myTarget.fieldChosenChoice, fieldNames);
-
                         object temp = fields[myTarget.fieldChosenChoice].GetValue(typeInstance);
                         if (temp is float) {
-                            fields[myTarget.fieldChosenChoice].SetValue(typeInstance, EditorGUILayout.FloatField(fields[myTarget.fieldChosenChoice].Name + ": ", (float)temp));
+                            if (myTarget.fieldValue == null)
+                                myTarget.fieldValue = 0.0f;
+                            myTarget.fieldValue = EditorGUILayout.FloatField(fields[myTarget.fieldChosenChoice].Name + ": ", (float)myTarget.fieldValue);
+                            /*fields[myTarget.fieldChosenChoice].SetValue(typeInstance, EditorGUILayout.FloatField(fields[myTarget.fieldChosenChoice].Name + ": ", (float)temp));
+                            myTarget.fieldValue = fields[myTarget.fieldChosenChoice].GetValue(typeInstance);*/
                         }
                         else if (temp is int) {
                             fields[myTarget.fieldChosenChoice].SetValue(typeInstance, EditorGUILayout.IntField(fields[myTarget.fieldChosenChoice].Name + ": ", (int)temp));
@@ -214,6 +217,10 @@ public class SkillManagerEditor : Editor {
                 break;
         }
 
+        if(GUILayout.Button("Create skill")) {
+            myTarget.SaveSkill();
+        }
+
         if(EditorGUI.EndChangeCheck()) {
             soTarget.ApplyModifiedProperties();
             GUI.FocusControl(null);
@@ -235,55 +242,5 @@ public class SkillManagerEditor : Editor {
                 EditorGUILayout.PropertyField(dist);
                 break;
         }
-    }
-
-    public static Type GetType(string TypeName) {
-
-        // Try Type.GetType() first. This will work with types defined
-        // by the Mono runtime, in the same assembly as the caller, etc.
-        var type = Type.GetType(TypeName);
-
-        // If it worked, then we're done here
-        if (type != null)
-            return type;
-
-        // If the TypeName is a full name, then we can try loading the defining assembly directly
-        if (TypeName.Contains(".")) {
-
-            // Get the name of the assembly (Assumption is that we are using 
-            // fully-qualified type names)
-            var assemblyName = TypeName.Substring(0, TypeName.IndexOf('.'));
-
-            // Attempt to load the indicated Assembly
-            var assembly = Assembly.Load(assemblyName);
-            if (assembly == null)
-                return null;
-
-            // Ask that assembly to return the proper Type
-            type = assembly.GetType(TypeName);
-            if (type != null)
-                return type;
-
-        }
-
-        // If we still haven't found the proper type, we can enumerate all of the 
-        // loaded assemblies and see if any of them define the type
-        var currentAssembly = Assembly.GetExecutingAssembly();
-        var referencedAssemblies = currentAssembly.GetReferencedAssemblies();
-        foreach (var assemblyName in referencedAssemblies) {
-
-            // Load the referenced assembly
-            var assembly = Assembly.Load(assemblyName);
-            if (assembly != null) {
-                // See if that assembly defines the named type
-                type = assembly.GetType(TypeName);
-                if (type != null)
-                    return type;
-            }
-        }
-
-        // The type just couldn't be found...
-        return null;
-
     }
 }

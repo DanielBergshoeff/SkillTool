@@ -497,8 +497,8 @@ GameObject:
   - component: {fileID: 738722659}
   - component: {fileID: 738722658}
   - component: {fileID: 738722657}
-  - component: {fileID: 738722661}
   - component: {fileID: 738722662}
+  - component: {fileID: 738722661}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -584,58 +584,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c006d7d967b5bf144944a132971e5da1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  triggerEvent:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 127603617}
-        m_MethodName: TransformUp
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-    m_TypeName: SkillManager+TriggerEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-  selectedScript: {fileID: 11500000, guid: db6aec0857cef3c42a7f980248c6a9b0, type: 3}
-  selectedMethod: 
-  startPosition: {fileID: 0}
-  targetPositions: []
-  prefabSkill: {fileID: 1854658020476856, guid: c333e657f427cab439976cd04a5baf82,
-    type: 2}
-  triggerOption: 2
-  startPositionOption: 3
-  endPositionOption: 4
-  input: 101
-  cooldownTime: 1
-  minTime: 0
-  maxTime: 0
-  timeBetween: 1
-  skillPositionVector: {x: 0, y: 2, z: 0}
-  skillPositionObject: {fileID: 738722656}
-  skillPositionDirection: {x: 0, y: 0, z: 0}
-  skillPositionDistance: 3
-  skillTargetVector: {x: 0, y: 0, z: 0}
-  skillTargetObject: {fileID: 127603611}
-  skillTargetDirection: {x: 0, y: 0, z: 0}
-  skillTargetDistance: 4
-  skillSpeed: 5
-  destroyOnEndPosition: 1
-  effectRange: 10
-  targetEffect: 3
-  effectTargetGameObject: {fileID: 0}
-  effectTargetName: 
-  effectTargetTag: 
-  effectTargetScriptName: Unit
-  effectOptionsChoice: 2
-  onEffectScriptName: 
-  currentTab: 3
-  positionChoice: 1
-  positionChoice1Direction: 4
-  targetChoice1Direction: 4
+  allSkills:
+  - {fileID: 11400000, guid: d2757cc630e9b2444874412c1dd15fb0, type: 2}
+  skillInstances: []
 --- !u!54 &738722662
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -651,6 +602,89 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!1 &1418613746
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1418613748}
+  - component: {fileID: 1418613747}
+  m_Layer: 0
+  m_Name: SkillCreator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1418613747
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1418613746}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d90c1cc5b5b3444f9d2cf5c4b5b3233, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  triggerEvent:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: TriggerEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  selectedScript: {fileID: 0}
+  selectedMethod: 
+  startPosition: {fileID: 0}
+  targetPositions: []
+  prefabSkill: {fileID: 1854658020476856, guid: c333e657f427cab439976cd04a5baf82,
+    type: 2}
+  triggerOption: 0
+  startPositionOption: 0
+  endPositionOption: 4
+  input: 101
+  cooldownTime: 1
+  minTime: 0
+  maxTime: 0
+  timeBetween: 0
+  currentTimeWaited: 0
+  skillPositionVector: {x: 0, y: 3, z: 0}
+  skillPositionObject: {fileID: 0}
+  skillPositionDirection: {x: 0, y: 0, z: 0}
+  skillPositionDistance: 0
+  skillTargetVector: {x: 0, y: 0, z: 0}
+  skillTargetObject: {fileID: 0}
+  skillTargetDirection: {x: 0, y: 0, z: 0}
+  skillTargetDistance: 0
+  skillSpeed: 3
+  destroyOnEndPosition: 1
+  effectRange: 5
+  targetEffect: 3
+  effectTargetGameObject: {fileID: 0}
+  effectTargetName: 
+  effectTargetTag: 
+  effectTargetScriptName: Unit
+  effectOptionsChoice: 2
+  fieldChosenChoice: 0
+  onEffectScriptName: 
+  currentTab: 2
+  positionChoice: 1
+  positionChoice1Direction: 0
+  targetChoice1Direction: 0
+  skillGameObject: {fileID: 0}
+--- !u!4 &1418613748
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1418613746}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 5.794644, y: 2.9121404, z: 1.8295479}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 8
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1599207914
 GameObject:
   m_ObjectHideFlags: 0
