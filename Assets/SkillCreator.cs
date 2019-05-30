@@ -6,13 +6,18 @@ using UnityEditor;
 
 public class SkillCreator : MonoBehaviour {
 
+    public string skillName;
+
     [SerializeField]
     public TriggerEvent triggerEvent = new TriggerEvent();
     public TriggerEvent onTriggerEvent { get { return triggerEvent; } set { triggerEvent = value; } }
+    public Object objMethod;
+
 
     [SerializeField]
-    public Object selectedScript;
-    public string selectedMethod;
+    public Object selectedScript = null;
+    public int selectedMethod;
+    public string selectedMethodString;
 
     [SerializeField]
     public Transform startPosition;
@@ -79,8 +84,17 @@ public class SkillCreator : MonoBehaviour {
     //Effect options
     public int effectOptionsChoice;
     public int fieldChosenChoice;
+    public int variableChangeChoice;
 
     public object fieldValue;
+    public int fieldValueInt;
+    public float fieldValueFloat;
+    public double fieldValueDouble;
+
+    public bool fieldMaxValueBool;
+    public bool fieldMinValueBool;
+    public int fieldMaxValue;
+    public int fieldMinValue;
 
     //From script
     public string onEffectScriptName;
@@ -122,6 +136,7 @@ public class SkillCreator : MonoBehaviour {
         skill.prefabSkill = prefabSkill;
         skill.selectedMethod = selectedMethod;
         skill.selectedScript = selectedScript;
+        skill.selectedMethodString = selectedMethodString;
         skill.skillGameObject = skillGameObject;
         skill.skillPositionDirection = skillPositionDirection;
         skill.skillPositionDistance = skillPositionDistance;
@@ -140,6 +155,17 @@ public class SkillCreator : MonoBehaviour {
         skill.timeBetween = timeBetween;
         skill.triggerEvent = triggerEvent;
         skill.triggerOption = triggerOption;
+        skill.variableChangeChoice = variableChangeChoice;
+        skill.skillName = skillName;
+
+        skill.fieldValueInt = fieldValueInt;
+        skill.fieldValueFloat = fieldValueFloat;
+        skill.fieldValueDouble = fieldValueDouble;
+
+        skill.fieldMaxValueBool = fieldMaxValueBool;
+        skill.fieldMinValueBool = fieldMinValueBool;
+        skill.fieldMaxValue = fieldMaxValue;
+        skill.fieldMinValue = fieldMinValue;
 
         string path = "Assets/Skills";
 
@@ -147,10 +173,10 @@ public class SkillCreator : MonoBehaviour {
             AssetDatabase.CreateFolder("Assets", "Skills");
         }
 
-        string assetPathAndName = AssetDatabase.GenerateUniqueAssetPath(path + "/" + skill.GetType().ToString() + ".asset");
+        string assetPathAndName = AssetDatabase.GenerateUniqueAssetPath(path + "/" + skill.skillName + ".asset");
 
         AssetDatabase.CreateAsset(skill, assetPathAndName);
-        Undo.RegisterCreatedObjectUndo(this, "Create " + skill.name);
+        Undo.RegisterCreatedObjectUndo(skill, "Create " + skill.skillName);
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();

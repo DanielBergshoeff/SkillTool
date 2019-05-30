@@ -5,14 +5,17 @@ using System.IO;
 using UnityEditor;
 
 public class Skill : ScriptableObject {
-
+    public string skillName;
+    
     [SerializeField]
     public TriggerEvent triggerEvent;
     public TriggerEvent onTriggerEvent { get { return triggerEvent; } set { triggerEvent = value; } }
+    public Object objMethod;
 
     [SerializeField]
     public Object selectedScript;
-    public string selectedMethod;
+    public int selectedMethod;
+    public string selectedMethodString;
 
     [SerializeField]
     public Transform startPosition;
@@ -79,8 +82,17 @@ public class Skill : ScriptableObject {
     //Effect options
     public int effectOptionsChoice;
     public int fieldChosenChoice;
+    public int variableChangeChoice;
 
     public object fieldValue;
+    public int fieldValueInt;
+    public float fieldValueFloat;
+    public double fieldValueDouble;
+
+    public bool fieldMaxValueBool;
+    public bool fieldMinValueBool;
+    public int fieldMaxValue;
+    public int fieldMinValue;
 
     //From script
     public string onEffectScriptName;

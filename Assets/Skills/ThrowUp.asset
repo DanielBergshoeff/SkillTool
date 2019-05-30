@@ -1,0 +1,78 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7be4a9c317b0d74bbaaaae0436fa589, type: 3}
+  m_Name: ThrowUp
+  m_EditorClassIdentifier: 
+  skillName: ThrowUp
+  triggerEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 11500000, guid: db6aec0857cef3c42a7f980248c6a9b0, type: 3}
+        m_MethodName: set_name
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_TypeName: TriggerEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  objMethod: {fileID: 0}
+  selectedScript: {fileID: 11500000, guid: db6aec0857cef3c42a7f980248c6a9b0, type: 3}
+  selectedMethod: 0
+  selectedMethodString: TransformUp
+  startPosition: {fileID: 0}
+  targetPositions: []
+  prefabSkill: {fileID: 1854658020476856, guid: c333e657f427cab439976cd04a5baf82,
+    type: 2}
+  triggerOption: 0
+  startPositionOption: 1
+  endPositionOption: 1
+  input: 98
+  cooldownTime: 5
+  minTime: 0
+  maxTime: 0
+  timeBetween: 5
+  currentTimeWaited: 0
+  skillPositionVector: {x: 0, y: 3, z: 0}
+  skillPositionObject: {fileID: 0}
+  skillPositionDirection: {x: 0, y: 0, z: 0}
+  skillPositionDistance: 0
+  skillTargetVector: {x: 10, y: 3, z: 0}
+  skillTargetObject: {fileID: 0}
+  skillTargetDirection: {x: 0, y: 0, z: 0}
+  skillTargetDistance: 0
+  skillSpeed: 5
+  destroyOnEndPosition: 1
+  effectRange: 5
+  targetEffect: 3
+  effectTargetGameObject: {fileID: 0}
+  effectTargetName: Player
+  effectTargetTag: 
+  effectTargetScriptName: Unit
+  effectOptionsChoice: 1
+  fieldChosenChoice: 0
+  variableChangeChoice: 2
+  fieldValueInt: 10
+  fieldValueFloat: 20
+  fieldValueDouble: 0
+  fieldMaxValueBool: 0
+  fieldMinValueBool: 1
+  fieldMaxValue: 100
+  fieldMinValue: 0
+  onEffectScriptName: 
+  currentTab: 2
+  positionChoice: 1
+  positionChoice1Direction: 0
+  targetChoice1Direction: 0
+  skillGameObject: {fileID: 0}

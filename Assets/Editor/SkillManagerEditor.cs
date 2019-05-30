@@ -8,6 +8,7 @@ using System;
 
 [CustomEditor(typeof(SkillCreator))]
 public class SkillManagerEditor : Editor {
+    private SerializedProperty skillName;
 
     private SkillCreator myTarget;
     private SerializedObject soTarget;
@@ -55,9 +56,18 @@ public class SkillManagerEditor : Editor {
 
     private SerializedProperty triggerEvent;
 
-    private void OnEnable() {
+    private SerializedProperty fieldMaxValueBool;
+    private SerializedProperty fieldMinValueBool;
+    private SerializedProperty fieldMaxValue;
+    private SerializedProperty fieldMinValue;
+
+    static string[] ignoreMethods = new string[] { "Start", "Update" };
+
+    private void OnEnable() {   
         myTarget = (SkillCreator)target;
         soTarget = new SerializedObject(target);
+
+        skillName = soTarget.FindProperty("skillName");
 
         //Prefab
         prefabSkill = soTarget.FindProperty("prefabSkill");
@@ -99,6 +109,11 @@ public class SkillManagerEditor : Editor {
         skillSpeed = soTarget.FindProperty("skillSpeed");
 
         triggerEvent = soTarget.FindProperty("triggerEvent");
+
+        fieldMaxValueBool = soTarget.FindProperty("fieldMaxValueBool");
+        fieldMinValueBool = soTarget.FindProperty("fieldMinValueBool");
+        fieldMaxValue = soTarget.FindProperty("fieldMaxValue");
+        fieldMinValue = soTarget.FindProperty("fieldMinValue");
     }
 
     public override void OnInspectorGUI() {
@@ -148,6 +163,8 @@ public class SkillManagerEditor : Editor {
                 break;
             case 2:
                 EditorGUILayout.PropertyField(prefabSkill);
+                EditorGUILayout.LabelField("Skill name");
+                EditorGUILayout.PropertyField(skillName);
                 break;
             case 3:
                 EditorGUILayout.PropertyField(destroyOnEndPosition);
@@ -168,49 +185,70 @@ public class SkillManagerEditor : Editor {
                         break;
                 }
 
-                myTarget.effectOptionsChoice = GUILayout.Toolbar(myTarget.effectOptionsChoice, new string[] { "Change variable(s) in script", "Call method", "Destroy object" });
+                myTarget.effectOptionsChoice = GUILayout.Toolbar(myTarget.effectOptionsChoice, new string[] { "Change variable", "Call method", "Destroy object" });
                 switch (myTarget.effectOptionsChoice) {
                     case 0:
                         EditorGUILayout.PropertyField(selectedScript);
-                        var type = SkillManager.GetType(myTarget.selectedScript.name);
-                        //System.Type type = typeof(Unit);
-                        var fields = type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-                        var typeInstance = System.Activator.CreateInstance(type);
+                        if (myTarget.selectedScript != null && !myTarget.selectedScript.Equals(null)) {
+                            var type = SkillManager.GetType(myTarget.selectedScript.name);
+                            //System.Type type = typeof(Unit);
+                            var fields = type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                            var typeInstance = System.Activator.CreateInstance(type);
 
-                        string[] fieldNames = new string[fields.Length];
-                        for (int i = 0; i < fields.Length; i++) {
-                            fieldNames[i] = fields[i].Name;
-                        }
+                            string[] fieldNames = new string[fields.Length];
+                            for (int i = 0; i < fields.Length; i++) {
+                                fieldNames[i] = fields[i].Name;
+                            }
 
-                        myTarget.fieldChosenChoice = GUILayout.Toolbar(myTarget.fieldChosenChoice, fieldNames);
-                        object temp = fields[myTarget.fieldChosenChoice].GetValue(typeInstance);
-                        if (temp is float) {
-                            if (myTarget.fieldValue == null)
-                                myTarget.fieldValue = 0.0f;
-                            myTarget.fieldValue = EditorGUILayout.FloatField(fields[myTarget.fieldChosenChoice].Name + ": ", (float)myTarget.fieldValue);
-                            /*fields[myTarget.fieldChosenChoice].SetValue(typeInstance, EditorGUILayout.FloatField(fields[myTarget.fieldChosenChoice].Name + ": ", (float)temp));
-                            myTarget.fieldValue = fields[myTarget.fieldChosenChoice].GetValue(typeInstance);*/
-                        }
-                        else if (temp is int) {
-                            fields[myTarget.fieldChosenChoice].SetValue(typeInstance, EditorGUILayout.IntField(fields[myTarget.fieldChosenChoice].Name + ": ", (int)temp));
-                        }
-
-                        /*for (int i = 0; i < fields.Length; i++) {
-                            object temp = fields[i].GetValue(typeInstance);
-                            
-                            EditorGUILayout.LabelField(fields[i].Name);
-                            
+                            myTarget.fieldChosenChoice = GUILayout.Toolbar(myTarget.fieldChosenChoice, fieldNames);
+                            object temp = fields[myTarget.fieldChosenChoice].GetValue(typeInstance);
                             if (temp is float) {
-                                fields[i].SetValue(typeInstance, EditorGUILayout.FloatField(fields[i].Name + ": ", (float)temp));
+                                if (myTarget.fieldValue == null)
+                                    myTarget.fieldValue = 0.0f;
+                                myTarget.fieldValueFloat = EditorGUILayout.FloatField(fields[myTarget.fieldChosenChoice].Name + ": ", myTarget.fieldValueFloat);
                             }
                             else if (temp is int) {
-                                fields[i].SetValue(typeInstance, EditorGUILayout.IntField(fields[i].Name + ": ", (int)temp));
+                                myTarget.fieldValueInt = EditorGUILayout.IntField(fields[myTarget.fieldChosenChoice].Name + ": ", myTarget.fieldValueInt);
                             }
-                        }*/
+                            else if (temp is double) {
+                                if (myTarget.fieldValue == null)
+                                    myTarget.fieldValue = (double)0;
+                                myTarget.fieldValueDouble = EditorGUILayout.DoubleField(fields[myTarget.fieldChosenChoice].Name + ": ", myTarget.fieldValueDouble);
+                            }
 
+                            myTarget.variableChangeChoice = GUILayout.Toolbar(myTarget.variableChangeChoice, new string[] { "Set variable", "Add to", "Subtract from" });
+                            if (myTarget.variableChangeChoice >= 0 && myTarget.variableChangeChoice < 3) {
+                                EditorGUILayout.LabelField("Set max value");
+                                EditorGUILayout.PropertyField(fieldMaxValueBool);
+                                EditorGUILayout.LabelField("Set min value");
+                                EditorGUILayout.PropertyField(fieldMinValueBool);
+                                
+                                if (myTarget.fieldMaxValueBool) {
+                                    EditorGUILayout.LabelField("Max value");
+                                    EditorGUILayout.PropertyField(fieldMaxValue);
+                                }
+                                if (myTarget.fieldMinValueBool) {
+                                    EditorGUILayout.LabelField("Min value");
+                                    EditorGUILayout.PropertyField(fieldMinValue);
+                                }
+                            }
+                            }
                         break;
                     case 1:
-                        EditorGUILayout.PropertyField(triggerEvent);
+                        EditorGUILayout.PropertyField(selectedScript);
+                        if(myTarget.selectedScript != null && !myTarget.selectedScript.Equals(null)) {
+                            Type t = SkillManager.GetType(myTarget.selectedScript.name);
+                            var typeInstance = System.Activator.CreateInstance(t);
+                            string[] names = t.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                            .Where(x => x.DeclaringType == t) // Only list methods defined in our own class
+                            .Where(x => x.GetParameters().Length == 0) // Make sure we only get methods with zero argumenrts
+                            .Where(x => !ignoreMethods.Any(n => n == x.Name)) // Don't list methods in the ignoreMethods array (so we can exclude Unity specific methods, etc.)
+                            .Select(x => x.Name)
+                            .ToArray();
+                            myTarget.selectedMethod = EditorGUILayout.Popup(myTarget.selectedMethod, names);
+
+                            myTarget.selectedMethodString = names[myTarget.selectedMethod];
+                        }
                         break;
 
                 }

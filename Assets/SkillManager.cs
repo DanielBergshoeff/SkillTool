@@ -100,17 +100,34 @@ public class SkillManager : MonoBehaviour {
                 for (int j = 0; j < skillInstances[i].skills.Count; j++) {
                     skillInstances[i].skills[j].skillGameObject.transform.position = Vector3.MoveTowards(skillInstances[i].skills[j].skillGameObject.transform.position, skillInstances[i].skills[j].targetPositions[0], Time.deltaTime * skillInstances[i].skills[j].skillSpeed);
                     if (Vector3.Distance(skillInstances[i].skills[j].skillGameObject.transform.position, skillInstances[i].skills[j].targetPositions[0]) < 0.01f) {
-                        Debug.Log("Skill reached end position and was destroyed");
-
                         //Effect
                         switch (allSkills[i].targetEffect) {
                             //If the target of effect is a script
-                            case TargetType.Script:
-                                Collider[] hitColliders = Physics.OverlapSphere(skillInstances[i].skills[j].skillGameObject.transform.position, allSkills[i].effectRange);
-                                foreach (Collider collider in hitColliders) {
-                                    var script = collider.gameObject.GetComponent(allSkills[i].effectTargetScriptName);
-                                    if (script != null) {
-                                        DoEffect(collider.gameObject, allSkills[i]);
+                            case TargetType.Script: {
+                                    Collider[] hitColliders = Physics.OverlapSphere(skillInstances[i].skills[j].skillGameObject.transform.position, allSkills[i].effectRange);
+                                    foreach (Collider collider in hitColliders) {
+                                        var script = collider.gameObject.GetComponent(allSkills[i].effectTargetScriptName);
+                                        if (script != null) {
+                                            DoEffect(collider.gameObject, skillInstances[i].skills[j]);
+                                        }
+                                    }
+                                }
+                                break;
+                            case TargetType.Name: {
+                                    Collider[] hitColliders = Physics.OverlapSphere(skillInstances[i].skills[j].skillGameObject.transform.position, allSkills[i].effectRange);
+                                    foreach (Collider collider in hitColliders) {
+                                        if (collider.gameObject.name == allSkills[i].effectTargetName) {
+                                            DoEffect(collider.gameObject, skillInstances[i].skills[j]);
+                                        }
+                                    }
+                                }
+                                break;
+                            case TargetType.Tag: {
+                                    Collider[] hitColliders = Physics.OverlapSphere(skillInstances[i].skills[j].skillGameObject.transform.position, allSkills[i].effectRange);
+                                    foreach (Collider collider in hitColliders) {
+                                        if (collider.gameObject.tag == allSkills[i].effectTargetTag) {
+                                            DoEffect(collider.gameObject, skillInstances[i].skills[j]);
+                                        }
                                     }
                                 }
                                 break;
@@ -118,8 +135,6 @@ public class SkillManager : MonoBehaviour {
 
                         if (allSkills[i].destroyOnEndPosition) {
                             {
-                                Debug.Log("Skill reached end position and was destroyed");
-
                                 Destroy(skillInstances[i].skills[j].skillGameObject);
                                 skillInstances[i].skills.Remove(skillInstances[i].skills[j]);
                             }
@@ -139,12 +154,71 @@ public class SkillManager : MonoBehaviour {
                 var fields = type.GetFields();
 
                 FieldInfo field = script.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)[skill.fieldChosenChoice];
-                field.SetValue(script, skill.fieldValue);
+
+                switch (skill.variableChangeChoice) {
+                    //If the variable is set
+                    case 0:
+                        if (field.GetValue(script) is float) {
+                            field.SetValue(script, skill.fieldValueFloat);
+                        }
+                        else if (field.GetValue(script) is int) {
+                            field.SetValue(script, skill.fieldValueInt);
+                        }
+                        if (field.GetValue(script) is double) {
+                            field.SetValue(script, skill.fieldValueDouble);
+                        }
+                        field.SetValue(script, skill.fieldValue);
+                        break;
+                    //If the variable is added to
+                    case 1:
+                        if (field.GetValue(script) is float) {
+                            if (skill.fieldValueFloat + (float)field.GetValue(script) <= skill.fieldMaxValue) 
+                                field.SetValue(script, (float)field.GetValue(script) + skill.fieldValueFloat);
+                            else 
+                                field.SetValue(script, skill.fieldMaxValue);
+                        }
+                        else if (field.GetValue(script) is int) {
+                            if (skill.fieldValueInt + (int)field.GetValue(script) <= skill.fieldMaxValue) 
+                                field.SetValue(script, (int)field.GetValue(script) + skill.fieldValueInt);
+                            else 
+                                field.SetValue(script, skill.fieldMaxValue);
+                        }
+                        if(field.GetValue(script) is double) {
+                            if (skill.fieldValueDouble + (double)field.GetValue(script) <= skill.fieldMaxValue)
+                                field.SetValue(script, (double)field.GetValue(script) + skill.fieldValueDouble);
+                            else
+                                field.SetValue(script, skill.fieldMaxValue);
+                        }
+                        break;
+                    //If the variable is subtracted from
+                    case 2:
+                        var newValue = field.GetValue(script);
+                        if (field.GetValue(script) is float) {
+                            newValue = (float)field.GetValue(script) - skill.fieldValueFloat;
+                            if (skill.fieldMinValueBool && skill.fieldMinValue >= (float)newValue)
+                                newValue = (float)skill.fieldMinValue;
+
+                        }
+                        else if (field.GetValue(script) is int) {
+                            newValue = (int)field.GetValue(script) - skill.fieldValueInt;
+                            if (skill.fieldMinValueBool && skill.fieldMinValue >= (int)newValue)
+                                newValue = (int)skill.fieldMinValue;
+                        }
+                        else if (field.GetValue(script) is double) {
+                            newValue = (double)field.GetValue(script) - skill.fieldValueDouble;
+                            if (skill.fieldMinValueBool && skill.fieldMinValue >= (double)newValue)
+                                newValue = (double)skill.fieldMinValue;
+                        }
+
+                        field.SetValue(script, newValue);
+                        break;
+                }
 
                 break;
             //If a method needs to be called in the script
             case 1:
-
+                MonoBehaviour methodscript = (MonoBehaviour)go.GetComponent(skill.selectedScript.name);
+                methodscript.Invoke(skill.selectedMethodString, 0f);
                 break;
             //If the gameobject needs to be destroyed
             case 2:
