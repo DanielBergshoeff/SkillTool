@@ -1544,6 +1544,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   allSkills:
   - {fileID: 11400000, guid: 6c638397eb83f7745a6b40c97ee43e56, type: 2}
+  - {fileID: 11400000, guid: d311dd5e2c0178e42b6a8e221c0c4bd6, type: 2}
   skillInstances: []
 --- !u!54 &738722662
 Rigidbody:
@@ -2547,16 +2548,16 @@ MonoBehaviour:
   targetPositions: []
   prefabSkill: {fileID: 1854658020476856, guid: c333e657f427cab439976cd04a5baf82,
     type: 2}
-  triggerOption: 0
+  triggerOption: 2
   startPositionOption: 1
   endPositionOption: 4
   input: 101
   cooldownTime: 1
   minTime: 0
   maxTime: 0
-  timeBetween: 5
+  timeBetween: 1
   currentTimeWaited: 0
-  skillPositionVector: {x: 1, y: 0, z: 0}
+  skillPositionVector: {x: 0, y: 2, z: 0}
   skillPositionObject: {fileID: 0}
   skillPositionDirection: {x: 0, y: 0, z: 0}
   skillPositionDistance: 0
@@ -2564,7 +2565,7 @@ MonoBehaviour:
   skillTargetObject: {fileID: 0}
   skillTargetDirection: {x: 0, y: 0, z: 0}
   skillTargetDistance: 0
-  skillSpeed: 8
+  skillSpeed: 3
   destroyOnEndPosition: 1
   effectRange: 5
   targetEffect: 3
