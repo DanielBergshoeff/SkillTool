@@ -41,7 +41,14 @@ public class SkillManagerEditor : Editor {
     private SerializedProperty skillTargetDistance;
 
     //Effect
+    private SerializedProperty skillSize;
+
+    private SerializedProperty timeTillEffect;
+    private SerializedProperty minTimeTillEffect;
+    private SerializedProperty maxTimeTillEffect;
+
     private SerializedProperty destroyOnEndPosition;
+    private SerializedProperty destroyOnEffect;
     private SerializedProperty effectRange;
 
     private SerializedProperty effectTargetGameObject;
@@ -94,7 +101,14 @@ public class SkillManagerEditor : Editor {
         skillTargetDistance = soTarget.FindProperty("skillTargetDistance");
 
         //Effect
+        skillSize = soTarget.FindProperty("skillSize");
+
+        timeTillEffect = soTarget.FindProperty("timeTillEffect");
+        minTimeTillEffect = soTarget.FindProperty("minTimeTillEffect");
+        maxTimeTillEffect = soTarget.FindProperty("maxTimeTillEffect");
+
         destroyOnEndPosition = soTarget.FindProperty("destroyOnEndPosition");
+        destroyOnEffect = soTarget.FindProperty("destroyOnEffect");
         effectRange = soTarget.FindProperty("effectRange");
 
         effectTargetGameObject = soTarget.FindProperty("effectTargetGameObject");
@@ -150,9 +164,6 @@ public class SkillManagerEditor : Editor {
                 ShowTargetOptions(ref myTarget.startPositionOption, ref myTarget.positionChoice1Direction, ref skillPositionVector, ref skillPositionObject, ref skillPositionDistance);
 
                 switch (myTarget.positionChoice) {
-                    case 0:
-                        
-                        break;
                     case 1:
                         EditorGUILayout.LabelField("End position");
                         ShowTargetOptions(ref myTarget.endPositionOption, ref myTarget.targetChoice1Direction, ref skillTargetVector, ref skillTargetObject, ref skillTargetDistance);
@@ -168,6 +179,21 @@ public class SkillManagerEditor : Editor {
                 break;
             case 3:
                 EditorGUILayout.PropertyField(destroyOnEndPosition);
+                EditorGUILayout.PropertyField(destroyOnEffect);
+                myTarget.whenToTriggerEffect = (EffectOptions)EditorGUILayout.EnumPopup("Effect trigger: ", myTarget.whenToTriggerEffect);
+                switch (myTarget.whenToTriggerEffect) {
+                    case EffectOptions.AfterTime:
+                        EditorGUILayout.PropertyField(timeTillEffect);
+                        break;
+                    case EffectOptions.AfterRandomTime:
+                        EditorGUILayout.PropertyField(minTimeTillEffect);
+                        EditorGUILayout.PropertyField(maxTimeTillEffect);
+                        break;
+                    case EffectOptions.OnImpact:
+                        EditorGUILayout.PropertyField(skillSize);
+                        break;
+
+                }
                 EditorGUILayout.PropertyField(effectRange);
                 myTarget.targetEffect = (TargetType)EditorGUILayout.EnumPopup("Target type: ", myTarget.targetEffect);
                 switch(myTarget.targetEffect) {

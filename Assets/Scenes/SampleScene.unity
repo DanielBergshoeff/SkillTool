@@ -1543,7 +1543,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   allSkills:
-  - {fileID: 11400000, guid: 6c638397eb83f7745a6b40c97ee43e56, type: 2}
+  - {fileID: 11400000, guid: 570f4b5a142446a43854c85c3c0afbf8, type: 2}
   - {fileID: 11400000, guid: d311dd5e2c0178e42b6a8e221c0c4bd6, type: 2}
   skillInstances: []
 --- !u!54 &738722662
@@ -2524,22 +2524,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d90c1cc5b5b3444f9d2cf5c4b5b3233, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillName: DmgPlayer
-  triggerEvent:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 11500000, guid: db6aec0857cef3c42a7f980248c6a9b0, type: 3}
-        m_MethodName: set_name
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-    m_TypeName: TriggerEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  skillName: DmgEnemy
   objMethod: {fileID: 0}
   selectedScript: {fileID: 11500000, guid: db6aec0857cef3c42a7f980248c6a9b0, type: 3}
   selectedMethod: 0
@@ -2548,31 +2533,37 @@ MonoBehaviour:
   targetPositions: []
   prefabSkill: {fileID: 1854658020476856, guid: c333e657f427cab439976cd04a5baf82,
     type: 2}
-  triggerOption: 2
-  startPositionOption: 1
-  endPositionOption: 4
-  input: 101
-  cooldownTime: 1
+  triggerOption: 0
+  startPositionOption: 3
+  endPositionOption: 3
+  input: 103
+  cooldownTime: 0.5
   minTime: 0
   maxTime: 0
-  timeBetween: 1
+  timeBetween: 1.5
   currentTimeWaited: 0
   skillPositionVector: {x: 0, y: 2, z: 0}
   skillPositionObject: {fileID: 0}
   skillPositionDirection: {x: 0, y: 0, z: 0}
-  skillPositionDistance: 0
+  skillPositionDistance: 1
   skillTargetVector: {x: 10, y: 3, z: 0}
   skillTargetObject: {fileID: 0}
   skillTargetDirection: {x: 0, y: 0, z: 0}
-  skillTargetDistance: 0
-  skillSpeed: 3
-  destroyOnEndPosition: 1
+  skillTargetDistance: 100
+  skillSpeed: 5
+  destroyOnEndPosition: 0
+  destroyOnEffect: 1
   effectRange: 5
   targetEffect: 3
   effectTargetGameObject: {fileID: 0}
   effectTargetName: Player
   effectTargetTag: 
   effectTargetScriptName: Unit
+  whenToTriggerEffect: 2
+  skillSize: 0
+  timeTillEffect: 0
+  minTimeTillEffect: 1
+  maxTimeTillEffect: 10
   effectOptionsChoice: 0
   fieldChosenChoice: 0
   variableChangeChoice: 2

@@ -7,10 +7,6 @@ using UnityEditor;
 public class SkillCreator : MonoBehaviour {
 
     public string skillName;
-
-    [SerializeField]
-    public TriggerEvent triggerEvent = new TriggerEvent();
-    public TriggerEvent onTriggerEvent { get { return triggerEvent; } set { triggerEvent = value; } }
     public Object objMethod;
 
 
@@ -69,6 +65,7 @@ public class SkillCreator : MonoBehaviour {
 
     //EFFECT
     public bool destroyOnEndPosition;
+    public bool destroyOnEffect;
 
     //Range of effect
     public float effectRange;
@@ -82,6 +79,13 @@ public class SkillCreator : MonoBehaviour {
     public string effectTargetScriptName;
 
     //Effect options
+    public EffectOptions whenToTriggerEffect;
+    public float skillSize;
+
+    public float timeTillEffect;
+    public float minTimeTillEffect;
+    public float maxTimeTillEffect;
+
     public int effectOptionsChoice;
     public int fieldChosenChoice;
     public int variableChangeChoice;
@@ -118,6 +122,7 @@ public class SkillCreator : MonoBehaviour {
         skill.currentTab = currentTab;
         skill.currentTimeWaited = currentTimeWaited;
         skill.destroyOnEndPosition = destroyOnEndPosition;
+        skill.destroyOnEffect = destroyOnEffect;
         skill.effectOptionsChoice = effectOptionsChoice;
         skill.effectRange = effectRange;
         skill.effectTargetGameObject = effectTargetGameObject;
@@ -153,10 +158,11 @@ public class SkillCreator : MonoBehaviour {
         skill.targetEffect = targetEffect;
         skill.targetPositions = targetPositions;
         skill.timeBetween = timeBetween;
-        skill.triggerEvent = triggerEvent;
         skill.triggerOption = triggerOption;
         skill.variableChangeChoice = variableChangeChoice;
         skill.skillName = skillName;
+        skill.whenToTriggerEffect = whenToTriggerEffect;
+        skill.skillSize = skillSize;
 
         skill.fieldValueInt = fieldValueInt;
         skill.fieldValueFloat = fieldValueFloat;
@@ -166,6 +172,10 @@ public class SkillCreator : MonoBehaviour {
         skill.fieldMinValueBool = fieldMinValueBool;
         skill.fieldMaxValue = fieldMaxValue;
         skill.fieldMinValue = fieldMinValue;
+
+        skill.timeTillEffect = timeTillEffect;
+        skill.minTimeTillEffect = minTimeTillEffect;
+        skill.maxTimeTillEffect = maxTimeTillEffect;
 
         string path = "Assets/Skills";
 

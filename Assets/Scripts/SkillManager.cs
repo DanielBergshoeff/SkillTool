@@ -32,11 +32,11 @@ public enum TargetType {
 
 [SerializeField]
 public enum EffectOptions {
-    
+    OnEndPosition,
+    AfterTime,
+    AfterRandomTime,
+    OnImpact
 }
-
-[System.Serializable]
-public class TriggerEvent : UnityEvent { }
 
 [System.Serializable]
 public class SkillInstances {
@@ -49,6 +49,8 @@ public class SkillManager : MonoBehaviour {
     
     [SerializeField]
     private SkillInstances[] skillInstances;
+
+    private List<Skill> skillsToBeDestroyed;
 
     // Use this for initialization
     void Start() {
@@ -69,20 +71,92 @@ public class SkillManager : MonoBehaviour {
                     break;
             }
         }
+
+        skillsToBeDestroyed = new List<Skill>();
     }
 	
 	// Update is called once per frame
 	void Update () {
+        CheckForSkillTrigger();
+        SkillBehaviour();        
+	}
+
+    /// <summary>
+    /// Moves the skill instances and triggers the effect depending on user choice
+    /// </summary>
+    private void SkillBehaviour() {
+        for (int i = 0; i < allSkills.Length; i++) {
+            skillsToBeDestroyed.Clear();
+            for (int j = 0; j < skillInstances[i].skills.Count; j++) {
+                if (allSkills[i].positionChoice == 1) { //If the skill should move
+                    skillInstances[i].skills[j].skillGameObject.transform.position = Vector3.MoveTowards(skillInstances[i].skills[j].skillGameObject.transform.position, skillInstances[i].skills[j].targetPositions[0], Time.deltaTime * skillInstances[i].skills[j].skillSpeed);
+                    if (Vector3.Distance(skillInstances[i].skills[j].skillGameObject.transform.position, skillInstances[i].skills[j].targetPositions[0]) < 0.01f) { //If the skill is at target position
+                        if (allSkills[i].whenToTriggerEffect == EffectOptions.OnEndPosition) {
+                            SelectEffect(i, j); //Do effect
+                        }
+
+                        if (allSkills[i].destroyOnEndPosition) {//If the skill should be destroyed at target position, destroy
+                            {
+                                if(!skillsToBeDestroyed.Contains(skillInstances[i].skills[j]))
+                                    skillsToBeDestroyed.Add(skillInstances[i].skills[j]);
+                            }
+                        }
+                    }
+                }
+
+                skillInstances[i].skills[j].timeAlive += Time.deltaTime;
+                if(allSkills[i].whenToTriggerEffect == EffectOptions.AfterTime || allSkills[i].whenToTriggerEffect == EffectOptions.AfterRandomTime) {
+                    if(skillInstances[i].skills[j].timeAlive >= skillInstances[i].skills[j].timeTillEffect) {
+                        SelectEffect(i, j);
+                    }
+                }
+
+                if(allSkills[i].whenToTriggerEffect == EffectOptions.OnImpact) {//If the skill should trigger on impact
+                    Collider[] hitColliders = Physics.OverlapSphere(skillInstances[i].skills[j].skillGameObject.transform.position, allSkills[i].skillSize);
+                    foreach (Collider collider in hitColliders) {
+                        switch (allSkills[i].targetEffect) {
+                            case TargetType.Name:
+                                if (collider.name == allSkills[i].effectTargetName)
+                                    SelectEffect(i, j);
+                                break;
+                            case TargetType.Script:
+                                if (collider.GetComponent(allSkills[i].effectTargetScriptName) != null)
+                                    SelectEffect(i, j);
+                                break;
+                            case TargetType.Tag:
+                                if (collider.CompareTag(allSkills[i].effectTargetTag))
+                                    SelectEffect(i, j);
+                                break;
+                        }
+                    }
+                }
+            }
+
+            foreach(Skill skill in skillsToBeDestroyed) {
+                Destroy(skill.skillGameObject);
+                skillInstances[i].skills.Remove(skill);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Goes through all the skills in SkillManager to check whether a trigger has been called to Instantiate the skill
+    /// </summary>
+    private void CheckForSkillTrigger() {
         foreach (Skill skill in allSkills) {
             //If trigger by player input
             if (skill.triggerOption == TriggerOptions.PlayerInput) {
-                if (Input.GetKeyDown(skill.input)) {
+                if(skill.currentTimeWaited > 0f)
+                    skill.currentTimeWaited -= Time.deltaTime;
+                if (Input.GetKeyDown(skill.input) && skill.currentTimeWaited <= 0f) {
                     InstantiateSkill(skill);
+                    skill.currentTimeWaited = skill.cooldownTime;
                 }
             }
             //If trigger by time
             else if (skill.triggerOption == TriggerOptions.Random || skill.triggerOption == TriggerOptions.Continuous) {
-                skill.currentTimeWaited -= Time.deltaTime;
+                if(skill.currentTimeWaited > 0f)
+                    skill.currentTimeWaited -= Time.deltaTime;
                 if (skill.currentTimeWaited <= 0) {
                     InstantiateSkill(skill);
                     //If trigger at random intervals
@@ -94,57 +168,58 @@ public class SkillManager : MonoBehaviour {
                 }
             }
         }
+    }
 
-        for (int i = 0; i < allSkills.Length; i++) {
-            if (allSkills[i].positionChoice == 1) {
-                for (int j = 0; j < skillInstances[i].skills.Count; j++) {
-                    skillInstances[i].skills[j].skillGameObject.transform.position = Vector3.MoveTowards(skillInstances[i].skills[j].skillGameObject.transform.position, skillInstances[i].skills[j].targetPositions[0], Time.deltaTime * skillInstances[i].skills[j].skillSpeed);
-                    if (Vector3.Distance(skillInstances[i].skills[j].skillGameObject.transform.position, skillInstances[i].skills[j].targetPositions[0]) < 0.01f) {
-                        //Effect
-                        switch (allSkills[i].targetEffect) {
-                            //If the target of effect is a script
-                            case TargetType.Script: {
-                                    Collider[] hitColliders = Physics.OverlapSphere(skillInstances[i].skills[j].skillGameObject.transform.position, allSkills[i].effectRange);
-                                    foreach (Collider collider in hitColliders) {
-                                        var script = collider.gameObject.GetComponent(allSkills[i].effectTargetScriptName);
-                                        if (script != null) {
-                                            DoEffect(collider.gameObject, skillInstances[i].skills[j]);
-                                        }
-                                    }
-                                }
-                                break;
-                            case TargetType.Name: {
-                                    Collider[] hitColliders = Physics.OverlapSphere(skillInstances[i].skills[j].skillGameObject.transform.position, allSkills[i].effectRange);
-                                    foreach (Collider collider in hitColliders) {
-                                        if (collider.gameObject.name == allSkills[i].effectTargetName) {
-                                            DoEffect(collider.gameObject, skillInstances[i].skills[j]);
-                                        }
-                                    }
-                                }
-                                break;
-                            case TargetType.Tag: {
-                                    Collider[] hitColliders = Physics.OverlapSphere(skillInstances[i].skills[j].skillGameObject.transform.position, allSkills[i].effectRange);
-                                    foreach (Collider collider in hitColliders) {
-                                        if (collider.gameObject.tag == allSkills[i].effectTargetTag) {
-                                            DoEffect(collider.gameObject, skillInstances[i].skills[j]);
-                                        }
-                                    }
-                                }
-                                break;
-                        }
-
-                        if (allSkills[i].destroyOnEndPosition) {
-                            {
-                                Destroy(skillInstances[i].skills[j].skillGameObject);
-                                skillInstances[i].skills.Remove(skillInstances[i].skills[j]);
-                            }
+    /// <summary>
+    /// Select the correct target and call effect on it
+    /// </summary>
+    /// <param name="skillIndex"></param>
+    /// <param name="skillInstanceIndex"></param>
+    private void SelectEffect(int skillIndex, int skillInstanceIndex) {
+        int i = skillIndex;
+        int j = skillInstanceIndex;
+        //Effect
+        switch (allSkills[i].targetEffect) {
+            //If the target of effect is a script
+            case TargetType.Script: {
+                    Collider[] hitColliders = Physics.OverlapSphere(skillInstances[i].skills[j].skillGameObject.transform.position, allSkills[i].effectRange);
+                    foreach (Collider collider in hitColliders) {
+                        var script = collider.gameObject.GetComponent(allSkills[i].effectTargetScriptName);
+                        if (script != null) {
+                            DoEffect(collider.gameObject, skillInstances[i].skills[j]);
                         }
                     }
                 }
-            }
+                break;
+            case TargetType.Name: {
+                    Collider[] hitColliders = Physics.OverlapSphere(skillInstances[i].skills[j].skillGameObject.transform.position, allSkills[i].effectRange);
+                    foreach (Collider collider in hitColliders) {
+                        if (collider.gameObject.name == allSkills[i].effectTargetName) {
+                            DoEffect(collider.gameObject, skillInstances[i].skills[j]);
+                        }
+                    }
+                }
+                break;
+            case TargetType.Tag: {
+                    Collider[] hitColliders = Physics.OverlapSphere(skillInstances[i].skills[j].skillGameObject.transform.position, allSkills[i].effectRange);
+                    foreach (Collider collider in hitColliders) {
+                        if (collider.gameObject.tag == allSkills[i].effectTargetTag) {
+                            DoEffect(collider.gameObject, skillInstances[i].skills[j]);
+                        }
+                    }
+                }
+                break;
         }
-	}
 
+        if(allSkills[i].destroyOnEffect)
+            skillsToBeDestroyed.Add(skillInstances[i].skills[j]);
+    }
+
+    /// <summary>
+    /// Goes through the possible effects a skill can have and enables those that have been chosen by the user
+    /// </summary>
+    /// <param name="go"></param>
+    /// <param name="skill"></param>
     private void DoEffect(GameObject go, Skill skill) {
         switch(skill.effectOptionsChoice) {
             //If a variable needs to be changed in the script
@@ -224,9 +299,18 @@ public class SkillManager : MonoBehaviour {
             case 2:
                 Destroy(go);
                 break;
-        }
+        }            
     }
 
+    /// <summary>
+    /// Takes a position choice and sets the position to spawn accordingly
+    /// </summary>
+    /// <param name="positionChoice"></param>
+    /// <param name="choice1dir"></param>
+    /// <param name="vec"></param>
+    /// <param name="go"></param>
+    /// <param name="dist"></param>
+    /// <returns></returns>
     private Vector3 GetPositionFromMenu(PositionOptions positionChoice, int choice1dir, Vector3 vec, GameObject go, float dist) {
         Vector3 positionToSpawn = Vector3.zero;
 
@@ -290,6 +374,10 @@ public class SkillManager : MonoBehaviour {
         return positionToSpawn;
     }
 
+    /// <summary>
+    /// Instantiates skills based on user information
+    /// </summary>
+    /// <param name="skillToInstantiate"></param>
     private void InstantiateSkill(Skill skillToInstantiate) {
         for (int i = 0; i < allSkills.Length; i++) {
             if(skillToInstantiate == allSkills[i]) {
@@ -299,6 +387,9 @@ public class SkillManager : MonoBehaviour {
                 GameObject skillgo = Instantiate(skill.prefabSkill, startPoint, Quaternion.identity);
                 skill.skillGameObject = skillgo;
                 skill.targetPositions.Add(targetPoint);
+                if(skill.whenToTriggerEffect == EffectOptions.AfterRandomTime) {
+                    skill.timeTillEffect = UnityEngine.Random.Range(skill.minTimeTillEffect, skill.maxTimeTillEffect);
+                }
                 skillInstances[i].skills.Add(skill);
             }
         }

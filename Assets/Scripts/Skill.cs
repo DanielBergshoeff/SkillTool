@@ -6,10 +6,6 @@ using UnityEditor;
 
 public class Skill : ScriptableObject {
     public string skillName;
-    
-    [SerializeField]
-    public TriggerEvent triggerEvent;
-    public TriggerEvent onTriggerEvent { get { return triggerEvent; } set { triggerEvent = value; } }
     public Object objMethod;
 
     [SerializeField]
@@ -67,6 +63,7 @@ public class Skill : ScriptableObject {
 
     //EFFECT
     public bool destroyOnEndPosition;
+    public bool destroyOnEffect;
 
     //Range of effect
     public float effectRange;
@@ -80,6 +77,13 @@ public class Skill : ScriptableObject {
     public string effectTargetScriptName;
 
     //Effect options
+    public EffectOptions whenToTriggerEffect;
+    public float skillSize;
+
+    public float timeTillEffect;
+    public float minTimeTillEffect;
+    public float maxTimeTillEffect;
+
     public int effectOptionsChoice;
     public int fieldChosenChoice;
     public int variableChangeChoice;
@@ -104,5 +108,7 @@ public class Skill : ScriptableObject {
     public int positionChoice, positionChoice1Direction, targetChoice1Direction;
 
     public GameObject skillGameObject;
+
+    public float timeAlive;
 
 }
